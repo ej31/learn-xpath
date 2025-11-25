@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPath 실전 챌린지 Workbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 정답 확인용 하이라이트 스타일 */
+        .highlight {
+            outline: 3px solid #2563eb !important; /* 파란색 테두리 */
+            background-color: rgba(37, 99, 235, 0.1) !important;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+            transition: all 0.2s;
+            position: relative;
+        }
+        /* 매칭된 요소에 뱃지 표시 */
+        .highlight::after {
+            content: "Found!";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #2563eb;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 99px;
+            z-index: 9999;
+        }
+        
+        .mission-card {
+            border-left: 4px solid #3b82f6;
+        }
+        .dom-preview {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            position: relative;
+        }
+        /* DOM 미리보기 영역에는 폰트 리셋 */
+        .dom-preview * {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans pb-20">
+
+    <!-- 헤더 -->
+    <header class="bg-slate-800 text-white p-6 shadow-md">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-3xl font-bold mb-2">🕵️ XPath 실전 챌린지</h1>
+            <p class="text-slate-300">주어진 미션을 읽고 정확한 요소를 타겟팅하는 XPath를 작성하세요.</p>
+        </div>
+    </header>
+
+    <!-- 고정 입력창 -->
+    <div class="sticky top-0 z-50 bg-white shadow-md border-b border-slate-200 p-4">
+        <div class="max-w-5xl mx-auto flex gap-4 items-center">
+            <div class="flex-grow">
+                <input type="text" id="xpathInput" 
+                       placeholder="여기에 정답 XPath를 입력하세요 (예: //div[@id='login'])" 
+                       class="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 font-mono text-lg shadow-inner"
+                       onkeydown="if(event.key === 'Enter') checkAnswer()">
+            </div>
+            <button onclick="checkAnswer()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow transition transform active:scale-95">
+                확인하기
+            </button>
+        </div>
+        <div class="max-w-5xl mx-auto mt-2 flex justify-between items-center text-sm">
+            <span id="statusMsg" class="text-slate-500 font-medium">XPath를 입력하고 Enter를 누르세요.</span>
+            <span id="matchCount" class="bg-slate-200 px-3 py-1 rounded-full text-slate-700 font-mono">0 matches</span>
+        </div>
+    </div>
+
+    <!-- 문제 영역 -->
+    <main class="max-w-5xl mx-auto mt-8 px-4 space-y-12">
+
+        <!-- LEVEL 1: 쇼핑몰 상품 목록 -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-blue-50 p-4 border-b border-blue-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-blue-900">LEVEL 1. 쇼핑몰 상품 목록</h2>
+                <span class="text-xs font-bold bg-blue-200 text-blue-800 px-2 py-1 rounded">난이도: 하</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 1-1</h3>
+                        <p class="text-sm text-slate-600 mb-2">상품 목록 중 <strong>"게이밍 마우스"의 가격(35,000원)</strong> 텍스트만 정확히 선택하세요.</p>
+                        <button onclick="toggleHint('hint1-1')" class="text-xs text-blue-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint1-1" class="hidden text-xs text-slate-500 mt-1 italic">텍스트 매칭과 형제 요소(following-sibling)를 활용해보세요.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 1-2</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>"품절(Sold Out)"</strong> 상태인 상품의 <strong>"담기" 버튼</strong>을 선택하세요.</p>
+                        <button onclick="toggleHint('hint1-2')" class="text-xs text-blue-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint1-2" class="hidden text-xs text-slate-500 mt-1 italic">부모 요소(ancestor/parent)로 올라갔다가 버튼을 찾아 내려오세요.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <div class="product-list grid grid-cols-2 gap-2">
+                        <!-- 상품 1 -->
+                        <div class="item border p-2 rounded">
+                            <h4 class="name font-bold">기계식 키보드</h4>
+                            <span class="price text-red-500 block">120,000원</span>
+                            <button class="btn bg-blue-500 text-white text-xs p-1 mt-1 rounded">담기</button>
+                        </div>
+                        <!-- 상품 2 -->
+                        <div class="item border p-2 rounded bg-gray-100">
+                            <h4 class="name font-bold">게이밍 마우스</h4>
+                            <span class="badge bg-yellow-300 text-[10px] px-1">Best</span>
+                            <span class="price text-red-500 block">35,000원</span>
+                            <button class="btn bg-blue-500 text-white text-xs p-1 mt-1 rounded">담기</button>
+                        </div>
+                        <!-- 상품 3 -->
+                        <div class="item border p-2 rounded opacity-75">
+                            <h4 class="name font-bold">모니터암</h4>
+                            <span class="status text-gray-500 text-xs">품절</span>
+                            <button class="btn bg-gray-400 text-white text-xs p-1 mt-1 rounded" disabled>담기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEVEL 2: 복잡한 데이터 테이블 -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-indigo-50 p-4 border-b border-indigo-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-indigo-900">LEVEL 2. 관리자 직원 목록</h2>
+                <span class="text-xs font-bold bg-indigo-200 text-indigo-800 px-2 py-1 rounded">난이도: 중</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 2-1</h3>
+                        <p class="text-sm text-slate-600 mb-2">직원 <strong>"이영희"</strong>의 <strong>"삭제"</strong> 버튼을 선택하세요. (순서 번호인 tr[2] 같은 인덱스 사용 금지)</p>
+                        <button onclick="toggleHint('hint2-1')" class="text-xs text-indigo-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint2-1" class="hidden text-xs text-slate-500 mt-1 italic">이름 텍스트를 먼저 찾고, 부모 행(tr)을 찾은 뒤, 다시 그 안의 버튼을 찾으세요.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 2-2</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>"과장"</strong> 직급을 가진 모든 직원의 <strong>이메일 주소(td)</strong>를 선택하세요.</p>
+                        <button onclick="toggleHint('hint2-2')" class="text-xs text-indigo-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint2-2" class="hidden text-xs text-slate-500 mt-1 italic">직급 열의 텍스트가 '과장'인 행을 찾고, 그 행의 3번째 td를 타겟팅하세요.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <table class="w-full text-sm text-left border-collapse" id="emp-table">
+                        <thead class="bg-gray-100 text-xs uppercase">
+                            <tr>
+                                <th class="p-2 border">이름</th>
+                                <th class="p-2 border">직급</th>
+                                <th class="p-2 border">이메일</th>
+                                <th class="p-2 border">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-2 border">김철수</td>
+                                <td class="p-2 border">대리</td>
+                                <td class="p-2 border">kim@company.com</td>
+                                <td class="p-2 border"><button class="text-red-500">삭제</button></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2 border">이영희</td>
+                                <td class="p-2 border">과장</td>
+                                <td class="p-2 border">lee@company.com</td>
+                                <td class="p-2 border"><button class="text-red-500">삭제</button></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2 border">박민수</td>
+                                <td class="p-2 border">사원</td>
+                                <td class="p-2 border">park@company.com</td>
+                                <td class="p-2 border"><button class="text-red-500">삭제</button></td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border">최지혜</td>
+                                <td class="p-2 border">과장</td>
+                                <td class="p-2 border">choi@company.com</td>
+                                <td class="p-2 border"><button class="text-red-500">삭제</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEVEL 3: 동적 클래스와 복합 조건 -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-purple-50 p-4 border-b border-purple-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-purple-900">LEVEL 3. 동적 클래스 & 폼</h2>
+                <span class="text-xs font-bold bg-purple-200 text-purple-800 px-2 py-1 rounded">난이도: 상</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 3-1</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>"동의함(Yes)"</strong> 라디오 버튼을 선택하세요. 단, <code>id</code>나 <code>name</code> 속성은 사용하지 마세요. (Label 텍스트 활용)</p>
+                        <button onclick="toggleHint('hint3-1')" class="text-xs text-purple-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint3-1" class="hidden text-xs text-slate-500 mt-1 italic">Label 텍스트를 찾고, 그 Label이 가리키는(for 속성 등) Input을 찾거나, 형제 관계를 이용하세요.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 3-2</h3>
+                        <p class="text-sm text-slate-600 mb-2">랜덤한 클래스명이 붙어있는 <strong>"저장(Save)" 버튼</strong>을 선택하세요. <code>jss-</code>로 시작하는 클래스는 언제든 바뀔 수 있으니 무시해야 합니다.</p>
+                        <button onclick="toggleHint('hint3-2')" class="text-xs text-purple-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint3-2" class="hidden text-xs text-slate-500 mt-1 italic">contains()를 사용하여 'btn-save' 부분만 매칭하거나, 텍스트 내용을 기반으로 찾으세요.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <form class="space-y-4 p-2">
+                        <div class="flex items-center gap-4 border p-2 rounded">
+                            <span class="font-bold text-sm">마케팅 수신:</span>
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" name="marketing" value="Y">
+                                <span>동의함(Yes)</span>
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" name="marketing" value="N" checked>
+                                <span>거절함(No)</span>
+                            </label>
+                        </div>
+
+                        <div class="flex gap-2 mt-4">
+                            <!-- 랜덤 클래스 시뮬레이션 -->
+                            <button type="button" class="jss-83921 btn-cancel px-3 py-1 bg-gray-200 text-gray-700 rounded">취소</button>
+                            <button type="submit" class="jss-55102 btn-save-primary px-3 py-1 bg-blue-600 text-white rounded">저장(Save)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function toggleHint(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function checkAnswer() {
+            const xpath = document.getElementById('xpathInput').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const matchCount = document.getElementById('matchCount');
+
+            // 1. 초기화 (기존 하이라이트 제거)
+            document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+            statusMsg.className = 'text-slate-500 font-medium';
+            
+            if (!xpath.trim()) {
+                statusMsg.textContent = "XPath를 입력해주세요.";
+                matchCount.textContent = "0 matches";
+                return;
+            }
+
+            try {
+                // 2. XPath 실행
+                const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                const foundNodes = [];
+
+                for (let i = 0; i < result.snapshotLength; i++) {
+                    foundNodes.push(result.snapshotItem(i));
+                }
+
+                // 3. 결과 처리
+                if (foundNodes.length > 0) {
+                    let elementCount = 0;
+                    foundNodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            node.classList.add('highlight');
+                            elementCount++;
+                        } else if (node.nodeType === Node.TEXT_NODE) {
+                            node.parentElement.classList.add('highlight');
+                            elementCount++;
+                        }
+                    });
+
+                    statusMsg.innerHTML = `<span class="text-blue-600 font-bold">성공!</span> 화면에서 선택된 요소를 확인하세요.`;
+                    matchCount.textContent = `${elementCount} matches`;
+                    matchCount.className = "bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-mono font-bold";
+                    
+                    // 첫 번째 요소로 부드럽게 스크롤
+                    if(foundNodes[0].nodeType === Node.ELEMENT_NODE) {
+                         foundNodes[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        foundNodes[0].parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
+                } else {
+                    statusMsg.innerHTML = `<span class="text-red-500 font-bold">실패:</span> 일치하는 요소가 없습니다.`;
+                    matchCount.textContent = "0 matches";
+                    matchCount.className = "bg-red-100 text-red-800 px-3 py-1 rounded-full font-mono font-bold";
+                }
+
+            } catch (e) {
+                statusMsg.innerHTML = `<span class="text-red-600 font-bold">문법 오류:</span> ${e.message}`;
+                matchCount.textContent = "Error";
+                matchCount.className = "bg-red-100 text-red-800 px-3 py-1 rounded-full font-mono font-bold";
+            }
+        }
+    </script>
+</body>
+</html>
