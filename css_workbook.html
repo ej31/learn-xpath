@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Selector 실전 챌린지 Workbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 정답 확인용 하이라이트 스타일 */
+        .highlight {
+            outline: 3px solid #db2777 !important; /* 핑크색 테두리 */
+            background-color: rgba(219, 39, 119, 0.1) !important;
+            box-shadow: 0 0 10px rgba(219, 39, 119, 0.5);
+            transition: all 0.2s;
+            position: relative;
+        }
+        /* 매칭된 요소에 뱃지 표시 */
+        .highlight::after {
+            content: "Found!";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #db2777;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 99px;
+            z-index: 9999;
+        }
+        
+        .mission-card {
+            border-left: 4px solid #ec4899;
+        }
+        .dom-preview {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .dom-preview * {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans pb-20">
+
+    <!-- 헤더 -->
+    <header class="bg-slate-800 text-white p-6 shadow-md">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-3xl font-bold mb-2">🎨 CSS Selector 실전 챌린지</h1>
+            <p class="text-slate-300">주어진 미션을 읽고 정확한 요소를 타겟팅하는 CSS 선택자를 작성하세요.</p>
+        </div>
+    </header>
+
+    <!-- 고정 입력창 -->
+    <div class="sticky top-0 z-50 bg-white shadow-md border-b border-slate-200 p-4">
+        <div class="max-w-5xl mx-auto flex gap-4 items-center">
+            <div class="flex-grow">
+                <input type="text" id="selectorInput" 
+                       placeholder="여기에 정답 CSS Selector를 입력하세요 (예: #login .btn)" 
+                       class="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:border-pink-500 font-mono text-lg shadow-inner"
+                       onkeydown="if(event.key === 'Enter') checkAnswer()">
+            </div>
+            <button onclick="checkAnswer()" 
+                    class="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-lg font-bold shadow transition transform active:scale-95">
+                확인하기
+            </button>
+        </div>
+        <div class="max-w-5xl mx-auto mt-2 flex justify-between items-center text-sm">
+            <span id="statusMsg" class="text-slate-500 font-medium">선택자를 입력하고 Enter를 누르세요.</span>
+            <span id="matchCount" class="bg-slate-200 px-3 py-1 rounded-full text-slate-700 font-mono">0 matches</span>
+        </div>
+    </div>
+
+    <!-- 문제 영역 -->
+    <main class="max-w-5xl mx-auto mt-8 px-4 space-y-12">
+
+        <!-- LEVEL 1: 기본 선택자와 계층 -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-pink-50 p-4 border-b border-pink-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-pink-900">LEVEL 1. 메뉴 네비게이션</h2>
+                <span class="text-xs font-bold bg-pink-200 text-pink-800 px-2 py-1 rounded">난이도: 하</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 1-1</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>'Active' 상태인 메뉴 아이템</strong>을 선택하세요. (홈 메뉴)</p>
+                        <button onclick="toggleHint('hint1-1')" class="text-xs text-pink-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint1-1" class="hidden text-xs text-slate-500 mt-1 italic">클래스 선택자(.)를 사용하세요. 공백 없이 연결하면 AND 조건입니다.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 1-2</h3>
+                        <p class="text-sm text-slate-600 mb-2">드롭다운 메뉴 내부의 <strong>모든 링크(a 태그)</strong>를 선택하세요.</p>
+                        <button onclick="toggleHint('hint1-2')" class="text-xs text-pink-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint1-2" class="hidden text-xs text-slate-500 mt-1 italic">자손 결합자(공백)를 활용하여 상위 ID와 하위 태그를 조합하세요.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <nav id="navbar" class="bg-gray-800 p-2 text-white rounded">
+                        <ul class="flex gap-4 list-none">
+                            <li class="menu-item active font-bold text-yellow-300">홈 (Home)</li>
+                            <li class="menu-item">소개</li>
+                            <li class="menu-item relative">
+                                서비스 (Dropdown)
+                                <div id="dropdown" class="absolute top-full left-0 bg-gray-700 p-2 mt-1 rounded hidden block shadow-lg border border-gray-600">
+                                    <a href="#" class="block text-sm p-1 hover:bg-gray-600 text-gray-200">웹 개발</a>
+                                    <a href="#" class="block text-sm p-1 hover:bg-gray-600 text-gray-200">앱 디자인</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEVEL 2: 속성 선택자와 형제 관계 -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-indigo-50 p-4 border-b border-indigo-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-indigo-900">LEVEL 2. 회원가입 폼</h2>
+                <span class="text-xs font-bold bg-indigo-200 text-indigo-800 px-2 py-1 rounded">난이도: 중</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 2-1</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>필수 입력(required)</strong> 속성이 있는 <strong>이메일 입력창</strong>을 선택하세요.</p>
+                        <button onclick="toggleHint('hint2-1')" class="text-xs text-indigo-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint2-1" class="hidden text-xs text-slate-500 mt-1 italic">속성 선택자 [attribute]를 사용해보세요. type 속성도 함께 체크하면 더 정확합니다.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 2-2</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>'비밀번호' 라벨 바로 다음에 오는</strong> 입력창을 선택하세요.</p>
+                        <button onclick="toggleHint('hint2-2')" class="text-xs text-indigo-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint2-2" class="hidden text-xs text-slate-500 mt-1 italic">인접 형제 결합자(+)를 사용하여 라벨 바로 뒤의 요소를 찾으세요.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview p-4">
+                    <form class="space-y-3" onsubmit="return false;">
+                        <div>
+                            <label class="block text-sm font-bold" for="u-email">이메일</label>
+                            <input type="email" id="u-email" required placeholder="example@test.com" class="border p-1 w-full rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold" for="u-pw">비밀번호</label>
+                            <input type="password" id="u-pw" class="border p-1 w-full rounded mt-1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold">프로필 이미지 (선택)</label>
+                            <input type="file" class="block w-full text-sm text-slate-500 mt-1">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEVEL 3: 가상 클래스 (nth-child, not) -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-purple-50 p-4 border-b border-purple-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-purple-900">LEVEL 3. 상품 목록 관리</h2>
+                <span class="text-xs font-bold bg-purple-200 text-purple-800 px-2 py-1 rounded">난이도: 상</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 3-1</h3>
+                        <p class="text-sm text-slate-600 mb-2">목록의 <strong>세 번째 상품(Item 3)</strong>만 정확히 선택하세요.</p>
+                        <button onclick="toggleHint('hint3-1')" class="text-xs text-purple-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint3-1" class="hidden text-xs text-slate-500 mt-1 italic">:nth-child(n) 가상 클래스를 사용하세요.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 3-2</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>'품절' 상태가 아닌(구매 가능한)</strong> 모든 버튼을 선택하세요.</p>
+                        <button onclick="toggleHint('hint3-2')" class="text-xs text-purple-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint3-2" class="hidden text-xs text-slate-500 mt-1 italic">:not() 가상 클래스를 사용하여 disabled 속성이 없거나, sold-out 클래스가 없는 요소를 찾으세요.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <ul class="grid grid-cols-2 gap-2 text-sm" id="product-list">
+                        <li class="border p-2 rounded bg-white flex flex-col items-center">
+                            <span>Item 1</span>
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs mt-1">구매</button>
+                        </li>
+                        <li class="border p-2 rounded bg-gray-100 flex flex-col items-center opacity-70">
+                            <span>Item 2</span>
+                            <button class="bg-gray-400 text-white px-2 py-1 rounded text-xs mt-1 sold-out" disabled>품절</button>
+                        </li>
+                        <li class="border p-2 rounded bg-white flex flex-col items-center">
+                            <span>Item 3 (Target)</span>
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs mt-1">구매</button>
+                        </li>
+                        <li class="border p-2 rounded bg-white flex flex-col items-center">
+                            <span>Item 4</span>
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs mt-1">구매</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEVEL 4: 계층 구조 심화 (자식 vs 자손) -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-emerald-50 p-4 border-b border-emerald-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-emerald-900">LEVEL 4. 파일 탐색기</h2>
+                <span class="text-xs font-bold bg-emerald-200 text-emerald-800 px-2 py-1 rounded">난이도: 최상</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 4-1</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>'My Documents' 폴더 바로 아래에 있는 파일들</strong>만 선택하세요. (하위 폴더 속의 파일은 제외)</p>
+                        <button onclick="toggleHint('hint4-1')" class="text-xs text-emerald-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint4-1" class="hidden text-xs text-slate-500 mt-1 italic">직계 자식 결합자(>)를 사용하여 깊이를 제한하세요.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 4-2</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>'Active' 파일 이후에 나오는 모든 파일</strong>을 선택하세요.</p>
+                        <button onclick="toggleHint('hint4-2')" class="text-xs text-emerald-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint4-2" class="hidden text-xs text-slate-500 mt-1 italic">일반 형제 결합자(~)를 사용하면 기준점 이후의 형제들을 모두 선택할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <div id="explorer" class="p-3 border rounded bg-gray-50 text-sm font-mono">
+                        <div class="folder mb-2">
+                            <div class="font-bold text-emerald-700">📁 My Documents</div>
+                            <div class="pl-4 border-l-2 border-gray-200 ml-1 mt-1">
+                                <div class="file p-1 bg-white border mb-1">📄 Report.docx (Target)</div>
+                                <div class="file p-1 bg-blue-100 border border-blue-300 mb-1 active">📄 Budget.xlsx (Active)</div>
+                                <div class="file p-1 bg-white border mb-1">📄 Photo.jpg (Target)</div>
+                                <div class="folder mt-2">
+                                    <div class="font-bold text-gray-600">📁 Old Work</div>
+                                    <div class="pl-4 border-l-2 border-gray-200 ml-1 mt-1">
+                                        <div class="file p-1 bg-gray-100 border text-gray-500">📄 Backup.zip</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEVEL 5: 상태 및 타입 심화 -->
+        <section class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-orange-50 p-4 border-b border-orange-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-orange-900">LEVEL 5. 고급 설정 패널</h2>
+                <span class="text-xs font-bold bg-orange-200 text-orange-800 px-2 py-1 rounded">난이도: 헬</span>
+            </div>
+            <div class="p-6 grid md:grid-cols-2 gap-8">
+                <!-- 미션 설명 -->
+                <div class="space-y-6">
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 5-1</h3>
+                        <p class="text-sm text-slate-600 mb-2"><strong>선택된(Checked) 라디오 버튼의 라벨</strong>을 선택하세요.</p>
+                        <button onclick="toggleHint('hint5-1')" class="text-xs text-orange-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint5-1" class="hidden text-xs text-slate-500 mt-1 italic">:checked 가상 클래스와 인접 형제 결합자(+)를 조합해보세요.</p>
+                    </div>
+
+                    <div class="mission-card bg-slate-50 p-4 rounded">
+                        <h3 class="font-bold text-lg mb-2">Mission 5-2</h3>
+                        <p class="text-sm text-slate-600 mb-2">문서 내의 <strong>두 번째 문단(p 태그)</strong>을 선택하세요. (중간에 다른 태그가 섞여 있어도 p 태그끼리만 순서를 세야 함)</p>
+                        <button onclick="toggleHint('hint5-2')" class="text-xs text-orange-500 hover:underline">💡 힌트 보기</button>
+                        <p id="hint5-2" class="hidden text-xs text-slate-500 mt-1 italic">:nth-child 대신 :nth-of-type을 사용해야 합니다.</p>
+                    </div>
+                </div>
+
+                <!-- DOM (문제) -->
+                <div class="dom-preview">
+                    <div class="bg-white p-4 border rounded shadow-sm space-y-4">
+                        <!-- Mission 5-1 DOM -->
+                        <div class="flex items-center gap-4 p-2 bg-gray-50 rounded border">
+                            <span class="font-bold text-xs text-gray-500 uppercase">Theme:</span>
+                            <div class="flex items-center gap-1">
+                                <input type="radio" name="theme" id="t-light">
+                                <label for="t-light" class="text-sm">Light</label>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <input type="radio" name="theme" id="t-dark" checked>
+                                <label for="t-dark" class="text-sm font-bold text-orange-600">Dark</label>
+                            </div>
+                        </div>
+
+                        <!-- Mission 5-2 DOM -->
+                        <article class="prose prose-sm border p-2 rounded">
+                            <h3 class="font-bold text-lg border-b pb-1 mb-2">Article Title</h3>
+                            <span class="text-xs text-gray-400">Published: 2023-10-25</span>
+                            <p class="mt-2 text-gray-600">First paragraph of the article.</p>
+                            <div class="bg-yellow-50 p-2 my-2 text-xs border border-yellow-200">Ad banner space</div>
+                            <p class="mt-2 text-gray-800">Second paragraph (Target content).</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function toggleHint(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function checkAnswer() {
+            const selector = document.getElementById('selectorInput').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const matchCount = document.getElementById('matchCount');
+
+            // 1. 초기화
+            document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+            statusMsg.className = 'text-slate-500 font-medium';
+            
+            if (!selector.trim()) {
+                statusMsg.textContent = "CSS 선택자를 입력해주세요.";
+                matchCount.textContent = "0 matches";
+                return;
+            }
+
+            try {
+                // 2. CSS Selector 실행
+                // querySelectorAll은 유효하지 않은 선택자일 경우 에러를 발생시킴
+                const foundNodes = document.querySelectorAll(selector);
+
+                // 3. 결과 처리
+                if (foundNodes.length > 0) {
+                    foundNodes.forEach(node => {
+                        node.classList.add('highlight');
+                    });
+
+                    statusMsg.innerHTML = `<span class="text-pink-600 font-bold">성공!</span> 화면에서 선택된 요소를 확인하세요.`;
+                    matchCount.textContent = `${foundNodes.length} matches`;
+                    matchCount.className = "bg-pink-100 text-pink-800 px-3 py-1 rounded-full font-mono font-bold";
+                    
+                    // 첫 번째 요소로 스크롤
+                    foundNodes[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                } else {
+                    statusMsg.innerHTML = `<span class="text-red-500 font-bold">실패:</span> 일치하는 요소가 없습니다.`;
+                    matchCount.textContent = "0 matches";
+                    matchCount.className = "bg-red-100 text-red-800 px-3 py-1 rounded-full font-mono font-bold";
+                }
+
+            } catch (e) {
+                statusMsg.innerHTML = `<span class="text-red-600 font-bold">문법 오류:</span> ${e.message}`;
+                matchCount.textContent = "Error";
+                matchCount.className = "bg-red-100 text-red-800 px-3 py-1 rounded-full font-mono font-bold";
+            }
+        }
+    </script>
+</body>
+</html>
