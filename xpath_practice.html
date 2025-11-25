@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPath 실습 플레이그라운드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .highlight {
+            outline: 3px solid #ef4444 !important; /* 빨간색 테두리 */
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            transition: all 0.2s;
+        }
+        .example-box {
+            border: 1px dashed #cbd5e1;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- 상단 고정: XPath 입력 도구 -->
+    <div class="fixed top-0 left-0 w-full bg-white shadow-lg z-50 p-4 border-b border-gray-200">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-center">
+            <div class="flex-grow w-full">
+                <label class="block text-sm font-bold text-gray-700 mb-1">XPath 입력:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="xpathInput" 
+                           placeholder="//div[@id='target'] (Enter키를 눌러 실행)" 
+                           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                           onkeydown="if(event.key === 'Enter') runXPath()">
+                    <button onclick="runXPath()" 
+                            class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold transition">
+                        실행
+                    </button>
+                </div>
+            </div>
+            <div class="w-full md:w-auto min-w-[150px]">
+                <div class="text-sm font-bold text-gray-700 mb-1">결과:</div>
+                <div id="resultCount" class="text-blue-600 font-mono text-lg font-bold">0개 매칭됨</div>
+            </div>
+        </div>
+        <p class="text-center text-xs text-gray-500 mt-2">
+            💡 팁: <code>$x()</code> 대신 여기에 입력하세요. 매칭된 요소는 <span class="text-red-500 font-bold">빨간 테두리</span>로 표시됩니다.
+        </p>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="max-w-4xl mx-auto mt-40 mb-20 px-4 space-y-12">
+
+        <!-- 섹션 1: 기본 & 속성 -->
+        <section id="sec-basics" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">1. 기본 & 속성 선택자</h2>
+            <p class="text-sm text-gray-600 mb-4">연습: ID, Class, 사용자 정의 속성을 찾아보세요.</p>
+            
+            <div class="example-box space-y-3">
+                <div id="target-id" class="p-2 border bg-white">ID가 'target-id'인 요소</div>
+                <div class="target-class" class="p-2 border bg-white">Class가 'target-class'인 요소 (1)</div>
+                <div class="target-class" class="p-2 border bg-white">Class가 'target-class'인 요소 (2)</div>
+                <input type="text" name="username" placeholder="User Name" class="border p-1 w-full" readonly>
+                <input type="password" name="password" placeholder="Password" class="border p-1 w-full mt-2" readonly>
+                <button data-role="submit-btn" class="bg-gray-200 px-2 py-1 rounded mt-2">Submit (data-role="submit-btn")</button>
+            </div>
+            
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath:<br>
+                //div[@id='target-id']<br>
+                //input[@name='username']<br>
+                //button[@data-role='submit-btn']
+            </div>
+        </section>
+
+        <!-- 섹션 2: 텍스트 & 공백 -->
+        <section id="sec-text" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">2. 텍스트 매칭 & 공백 처리</h2>
+            <p class="text-sm text-gray-600 mb-4">연습: <code>text()</code>, <code>contains()</code>, <code>normalize-space()</code></p>
+            
+            <div class="example-box space-y-2">
+                <p>정확한 텍스트입니다</p>
+                <p>이 문장은 <b>중요한</b> 단어를 포함합니다.</p>
+                <p>
+                    줄바꿈과     공백이     많은     텍스트
+                </p>
+                <span class="price">가격: 50,000원</span>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath:<br>
+                //p[text()='정확한 텍스트입니다']<br>
+                //p[contains(text(), '중요한')] (실패함 - text가 분리됨)<br>
+                //p[contains(., '중요한')] (성공 - .은 하위 텍스트 포함)<br>
+                //p[normalize-space()='줄바꿈과 공백이 많은 텍스트']<br>
+                //span[contains(text(), '가격')]
+            </div>
+        </section>
+
+        <!-- 섹션 3: 인덱스 & 그룹핑 함정 -->
+        <section id="sec-index" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2 text-red-600">3. 인덱스와 그룹핑 (⚠️ 중요)</h2>
+            <p class="text-sm text-gray-600 mb-4">
+                <code>//ul/li[1]</code> 과 <code>(//ul/li)[1]</code>의 차이를 확인해보세요.
+            </p>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="example-box">
+                    <h4 class="font-bold mb-2">과일 목록 (List 1)</h4>
+                    <ul class="list-disc pl-5">
+                        <li>사과 (1-1)</li>
+                        <li>바나나 (1-2)</li>
+                        <li>체리 (1-3)</li>
+                    </ul>
+                </div>
+                <div class="example-box">
+                    <h4 class="font-bold mb-2">야채 목록 (List 2)</h4>
+                    <ul class="list-disc pl-5">
+                        <li>당근 (2-1)</li>
+                        <li>오이 (2-2)</li>
+                        <li>피망 (2-3)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                실험해보세요:<br>
+                1. //ul/li[1]  -> 결과: 2개 (각 리스트의 첫 번째)<br>
+                2. (//ul/li)[1] -> 결과: 1개 (전체 중 첫 번째 - 사과)<br>
+                3. //ul/li[last()] -> 결과: 2개 (체리, 피망)
+            </div>
+        </section>
+
+        <!-- 섹션 4: 축 (Axes) -->
+        <section id="sec-axes" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">4. 축 (Axes) 이동</h2>
+            <p class="text-sm text-gray-600 mb-4">부모, 형제, 자식을 탐색합니다.</p>
+            
+            <div class="example-box p-4 bg-blue-50">
+                <div id="grandparent" class="p-4 border border-blue-300 rounded bg-white">
+                    <span class="text-xs text-gray-400">Grandparent (#grandparent)</span>
+                    <div id="parent" class="p-4 mt-2 border border-green-300 rounded bg-green-50">
+                        <span class="text-xs text-gray-400">Parent (#parent)</span>
+                        <h3 class="font-bold text-lg">나 기준 (Target)</h3>
+                        <p class="text-sm text-gray-500">내 바로 뒤 형제 (Following Sibling)</p>
+                        <p class="text-sm text-gray-500">그 다음 형제</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath:<br>
+                //h3[text()='나 기준 (Target)']/parent::div<br>
+                //h3/following-sibling::p[1]<br>
+                //h3/ancestor::div[@id='grandparent']
+            </div>
+        </section>
+
+        <!-- 섹션 5: 클래스 매칭 심화 -->
+        <section id="sec-class" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">5. 클래스 매칭 (심화)</h2>
+            <p class="text-sm text-gray-600 mb-4"><code>contains()</code>만 썼을 때의 문제를 확인하세요.</p>
+            
+            <div class="example-box space-y-2">
+                <div class="btn">Pure Button (.btn)</div>
+                <div class="btn primary">Primary Button (.btn .primary)</div>
+                <div class="btn-group">Button Group (.btn-group) - 함정!</div>
+                <div class="large btn danger">Large Danger Button</div>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                실험해보세요:<br>
+                1. //div[contains(@class, 'btn')] -> 결과: 4개 (btn-group 포함됨)<br>
+                2. //div[contains(concat(' ', @class, ' '), ' btn ')] -> 결과: 3개 (정확히 btn 클래스만)<br>
+                3. //div[contains(@class, 'btn') and contains(@class, 'danger')]
+            </div>
+        </section>
+
+        <!-- 섹션 6: 테이블 데이터 -->
+        <section id="sec-table" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">6. 테이블 데이터 추출</h2>
+            
+            <div class="example-box">
+                <table class="w-full text-sm text-left text-gray-500" id="data-table">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2">제품명</th>
+                            <th class="px-4 py-2">가격</th>
+                            <th class="px-4 py-2">재고</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b">
+                            <td class="px-4 py-2">키보드</td>
+                            <td class="px-4 py-2">120,000</td>
+                            <td class="px-4 py-2">15</td>
+                        </tr>
+                        <tr class="bg-white border-b">
+                            <td class="px-4 py-2">마우스</td>
+                            <td class="px-4 py-2">85,000</td>
+                            <td class="px-4 py-2">0 (품절)</td>
+                        </tr>
+                        <tr class="bg-white">
+                            <td class="px-4 py-2">모니터</td>
+                            <td class="px-4 py-2">350,000</td>
+                            <td class="px-4 py-2">5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath:<br>
+                //table[@id='data-table']//tr[2]/td[1] (마우스)<br>
+                //td[contains(text(), '품절')]/parent::tr/td[1] (품절된 상품명 찾기)
+            </div>
+        </section>
+
+        <!-- 섹션 7: 폼 상태 및 체크박스 -->
+        <section id="sec-forms" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">7. 폼 상태 (Checked, Disabled)</h2>
+            <p class="text-sm text-gray-600 mb-4">체크된 항목이나 비활성화된 요소를 찾는 것은 자동화 테스트의 핵심입니다.</p>
+            
+            <div class="example-box space-y-3">
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> 마케팅 동의 (Checked)
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2"> 이용 약관 (Unchecked)
+                    </label>
+                </div>
+                
+                <div class="flex gap-2 mt-2">
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded">활성 버튼</button>
+                    <button class="bg-gray-300 text-gray-500 px-3 py-1 rounded" disabled>비활성 버튼</button>
+                </div>
+
+                <select class="border p-1 mt-2">
+                    <option value="kr">한국어</option>
+                    <option value="en" selected>English (Selected)</option>
+                    <option value="jp">日本語</option>
+                </select>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath:<br>
+                //input[@type='checkbox' and @checked] (체크된 박스)<br>
+                //button[@disabled] (비활성 버튼)<br>
+                //button[not(@disabled)] (활성 버튼만)<br>
+                //option[@selected] (선택된 옵션)
+            </div>
+        </section>
+
+        <!-- 섹션 8: 논리 연산자 복합 -->
+        <section id="sec-logic" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">8. 복합 논리 연산 (AND/OR/NOT)</h2>
+            <p class="text-sm text-gray-600 mb-4">여러 조건을 조합하여 원하는 요소를 정밀하게 타겟팅해보세요.</p>
+            
+            <div class="example-box grid grid-cols-2 gap-2">
+                <div class="box red large p-2 border bg-red-50">Red Large Box</div>
+                <div class="box red small p-2 border bg-red-50 text-xs">Red Small Box</div>
+                <div class="box blue large p-2 border bg-blue-50">Blue Large Box</div>
+                <div class="box blue small p-2 border bg-blue-50 text-xs">Blue Small Box</div>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath:<br>
+                //div[contains(@class, 'red') and contains(@class, 'large')] (Red & Large)<br>
+                //div[contains(@class, 'blue') and not(contains(@class, 'small'))] (Blue & Not Small)<br>
+                //div[(contains(@class, 'red') or contains(@class, 'blue')) and contains(@class, 'large')] (Red or Blue, but must be Large)
+            </div>
+        </section>
+
+        <!-- 섹션 9: 범위 선택 (Between) -->
+        <section id="sec-range" class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">9. 범위 선택 (Between)</h2>
+            <p class="text-sm text-gray-600 mb-4">특정 시작 요소와 끝 요소 <strong>사이</strong>에 있는 항목들을 선택합니다. 크롤링 시 본문 내용 추출에 유용합니다.</p>
+            
+            <div class="example-box bg-white p-4">
+                <h3 class="font-bold text-xl mb-2 border-b-2 border-blue-500 inline-block">시작 지점 (Start)</h3>
+                
+                <p class="mt-2 text-gray-600">첫 번째 문단입니다. (선택 대상)</p>
+                <p class="mt-2 text-gray-600">두 번째 문단입니다. (선택 대상)</p>
+                <div class="mt-2 p-2 bg-yellow-50 border">중간에 낀 박스 (선택 대상)</div>
+                
+                <h3 class="font-bold text-xl mt-4 mb-2 border-b-2 border-red-500 inline-block">끝 지점 (End)</h3>
+                <p class="mt-2 text-gray-400">여기는 선택되면 안 됩니다.</p>
+            </div>
+
+            <div class="mt-4 bg-gray-50 p-3 rounded text-xs font-mono text-gray-600">
+                추천 XPath (교집합 원리):<br>
+                //p[preceding-sibling::h3[contains(text(), '시작')] and following-sibling::h3[contains(text(), '끝')]]<br>
+                <br>
+                설명: "내 앞에 '시작'이 있고" AND "내 뒤에 '끝'이 있는" 모든 p 태그
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 스크립트: XPath 실행 로직 -->
+    <script>
+        function runXPath() {
+            const input = document.getElementById('xpathInput').value;
+            const resultDisplay = document.getElementById('resultCount');
+            
+            // 1. 기존 하이라이트 제거
+            document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+
+            if (!input.trim()) {
+                resultDisplay.innerText = "0개 매칭됨";
+                resultDisplay.className = "text-gray-500 font-mono text-lg font-bold";
+                return;
+            }
+
+            try {
+                // 2. XPath 평가
+                const nodes = [];
+                const result = document.evaluate(input, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                
+                for (let i = 0; i < result.snapshotLength; i++) {
+                    nodes.push(result.snapshotItem(i));
+                }
+
+                // 3. 결과 표시 및 하이라이트
+                if (nodes.length > 0) {
+                    nodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            node.classList.add('highlight');
+                            // 첫 번째 요소로 스크롤 이동 (선택 사항)
+                            // nodes[0].scrollIntoView({ behavior: "smooth", block: "center" });
+                        } else if (node.nodeType === Node.TEXT_NODE) {
+                            // 텍스트 노드가 선택된 경우 부모를 하이라이트
+                            node.parentElement.classList.add('highlight');
+                        }
+                    });
+                    resultDisplay.innerText = `${nodes.length}개 매칭됨!`;
+                    resultDisplay.className = "text-green-600 font-mono text-lg font-bold";
+                } else {
+                    resultDisplay.innerText = "0개 매칭됨";
+                    resultDisplay.className = "text-red-500 font-mono text-lg font-bold";
+                }
+
+            } catch (e) {
+                // 문법 오류 처리
+                resultDisplay.innerText = "XPath 문법 오류";
+                resultDisplay.className = "text-red-600 font-mono text-lg font-bold";
+                console.error(e);
+                alert("유효하지 않은 XPath 표현식입니다.\n\n" + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
