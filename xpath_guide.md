@@ -1,113 +1,94 @@
+
 # XPath 실전 챌린지 정답 및 해설
 
 - `xpath_workbook.html` 파일에 있는 미션들의 모범 답안입니다.
 - XPath는 정답이 하나만 있는 것이 아닙니다. 상황에 따라 더 견고하고 효율적인 방법을 선택하는 것이 중요합니다!
 
-## LEVEL 1. 쇼핑몰 상품 목록
+## LEVEL 0. 로그인 페이지 (입문)
 
-### Mission 1-1: "게이밍 마우스"의 가격 선택
+### Mission 0-1: ID로 제목 찾기
 
-**목표:** 상품명 텍스트를 기준으로 그 상품의 가격 요소를 찾아야 합니다.
+- **정답:** `//*[@id='login-title']`
+- **해설:** ID는 유일하므로 가장 빠릅니다.
 
-- **Best Answer:**
-    
-    ```
-    //h4[text()='게이밍 마우스']/following-sibling::span[@class='price']
-    ```
-    
-    *(설명: h4 태그 중 텍스트가 정확히 '게이밍 마우스'인 것을 찾고, 그 뒤에 나오는 형제 요소 중 class가 price인 span을 찾음)*
-    
-- **Alternative (contains 활용):**
-    
-    ```
-    //h4[contains(text(), '마우스')]/following-sibling::span[contains(@class, 'price')]
-    ```
-    
+### Mission 0-2: "로그인" 버튼 찾기
 
-### Mission 1-2: "품절" 상품의 "담기" 버튼 선택
+- **정답:** `//button[text()='로그인']`
+- **해설:** `text()` 함수로 정확한 텍스트 매칭을 합니다.
 
-**목표:** 상태(품절) 텍스트를 기준으로 버튼을 찾아야 합니다. DOM 구조상 버튼은 형제 요소일 수도 있고, 부모를 거쳐 내려와야 할 수도 있습니다.
+### Mission 0-3: placeholder 속성으로 찾기
 
-- **Best Answer (형제 관계 이용):**
-    
-    ```
-    //span[text()='품절']/following-sibling::button
-    ```
-    
-- **Alternative (부모 경유):**
-    
-    ```
-    //div[@class='item'][.//span[text()='품절']]//button
-    ```
-    
-    *(설명: 내부에 '품절' span을 가지고 있는 item div를 먼저 찾고, 그 안의 버튼을 찾음. 이 방식이 더 안전할 때가 많습니다.)*
-    
+- **정답:** `//input[@placeholder='비밀번호 입력']`
 
-## LEVEL 2. 관리자 직원 목록 (테이블)
+## LEVEL 1. 블로그 포스트 (계층 구조)
 
-### Mission 2-1: "이영희"의 "삭제" 버튼
+### Mission 1-1: ID 내부의 작성자 span 찾기
 
-**목표:** 특정 텍스트가 있는 행(Row)을 찾고, 그 행 안의 특정 버튼을 클릭해야 합니다. 웹 자동화에서 가장 많이 쓰이는 패턴입니다.
+- **정답:** `//div[@id='content']//span`
+- **해설:** `//`는 하위의 모든 자손을 의미합니다. ID가 'content'인 div 아래의 모든 span을 찾습니다.
 
-- **Best Answer:**
-    
-    ```
-    //td[text()='이영희']/parent::tr//button
-    ```
-    
-    *(설명: '이영희' 텍스트가 있는 td를 찾고 -> 부모인 tr로 올라가서 -> 그 tr 안에 있는 button을 찾음)*
-    
-- **Alternative (한 줄로 쓰기):**
-    
-    ```
-    //tr[td[text()='이영희']]//button
-    ```
-    
-    *(설명: td 텍스트가 '이영희'인 tr을 조건(Predicate)으로 바로 찾음)*
-    
+### Mission 1-2: class가 'date'인 요소 찾기
 
-## LEVEL 3. 동적 클래스 & 폼
+- **정답:** `//*[@class='date']` 또는 `//span[@class='date']`
+- **해설:** 클래스 속성을 직접 타겟팅합니다.
 
-### Mission 3-1: "동의함(Yes)" 라디오 버튼 (Label 텍스트 활용)
+## LEVEL 2. 소셜 링크 (문자열 매칭)
 
-**목표:** Input 태그에 식별자가 없을 때, 사람이 읽는 Label 텍스트를 이용해 Input을 찾아야 합니다.
+### Mission 2-1: href가 'https://twitter'로 시작
 
-- **Best Answer (Label 안에 Input이 있는 경우):**
-    
-    ```
-    //label[contains(., '동의함')]//input[@type='radio']
-    ```
-    
-    *(설명: `.` 은 현재 노드의 모든 텍스트를 포함합니다. Label 안에 '동의함' 텍스트가 있고 Input이 자식으로 있으므로 이렇게 찾을 수 있습니다.)*
-    
-- **Alternative (Label 텍스트 형제 찾기):**
-    
-    ```
-    //span[contains(text(), '동의함')]/preceding-sibling::input
-    ```
-    *(설명: '동의함' span을 찾고, 그 앞(preceding)에 있는 input 형제를 찾음)*
-    
+- **정답:** `//a[starts-with(@href, 'https://twitter')]`
+- **해설:** `starts-with(@속성, '시작문자열')` 함수는 URL 필터링에 매우 유용합니다.
 
-### Mission 3-2: 랜덤 클래스 무시하고 "저장" 버튼 찾기
+### Mission 2-2: class에 'instagram' 포함
 
-**목표:** `jss-55102` 같은 랜덤 생성 클래스는 매번 바뀌므로 절대 사용하면 안 됩니다. 고정된 부분만 활용하세요.
+- **정답:** `//a[contains(@class, 'instagram')]`
+- **해설:** 클래스가 여러 개일 때(예: `social-link instagram`) 유용합니다.
 
-- **Best Answer (클래스 일부 매칭):**
-    
-    ```
-    //button[contains(@class, 'btn-save')]
-    ```
-    
-    *(설명: 클래스 전체가 아닌 'btn-save'가 포함되어 있는지만 확인)*
-    
-- **Alternative (텍스트 내용 기반):**
-    
-    ```
-    //button[contains(text(), '저장')]
-    ```
-    
-    *(설명: 버튼에 쓰여진 텍스트를 기준으로 찾음. 가장 직관적임)*
-    
+## LEVEL 3. 페이지네이션 (순서와 인덱스)
+
+### Mission 3-1: 첫 번째 페이지 번호
+
+- **정답:** `//ul[@id='pagination']/li[1]`
+- **해설:** XPath 인덱스는 **1부터 시작**합니다.
+
+### Mission 3-2: 마지막 페이지 번호
+
+- **정답:** `//ul[@id='pagination']/li[last()]`
+- **해설:** `last()` 함수는 요소의 개수가 변해도 항상 마지막 요소를 찾아줍니다.
+
+## LEVEL 4. 쇼핑몰 상품 목록 (형제 관계)
+
+### Mission 4-1: "게이밍 마우스"의 가격 선택
+
+- **정답:** `//h4[text()='게이밍 마우스']/following-sibling::span[contains(@class, 'price')]`
+- **해설:** 텍스트로 기준 요소를 찾고 `following-sibling`으로 가격을 찾습니다.
+
+### Mission 4-2: "품절" 상품의 "담기" 버튼 선택
+
+- **정답:** `//span[text()='품절']/following-sibling::button`
+
+## LEVEL 5. 관리자 직원 목록 (부모/조상)
+
+### Mission 5-1: "이영희"의 "삭제" 버튼
+
+- **정답:** `//td[text()='이영희']/parent::tr//button`
+- **해설:** 이름을 찾고 -> 부모 행(tr)으로 이동 -> 다시 자식 버튼으로 이동하는 패턴입니다.
+
+### Mission 5-2: "과장" 직급의 이메일
+
+- **정답:** `//tr[td[2][text()='과장']]/td[3]`
+- **해설:** `tr` 중에서 '2번째 td가 과장인 것'을 필터링하고, 그 `tr`의 3번째 td를 가져옵니다.
+
+## LEVEL 6. 동적 클래스 & 폼 (고급)
+
+### Mission 6-1: "동의함(Yes)" 라디오 버튼
+
+- **정답:** `//label[contains(., '동의함')]//input`
+- **해설:** `contains(., text)`는 현재 노드 및 자손 텍스트를 모두 검사합니다.
+
+### Mission 6-2: 랜덤 클래스 무시하고 버튼 찾기
+
+- **정답:** `//button[contains(@class, 'btn-save')]`
 
 ## 💡 XPath 작성 꿀팁
 
