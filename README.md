@@ -42,7 +42,6 @@
     
     ```
     git clone https://github.com/ej31/learn-xpath.git
-    
     ```
     
 2. 다운로드한 폴더 내의 `index.html` 파일을 더블 클릭하여 브라우저에서 엽니다.
