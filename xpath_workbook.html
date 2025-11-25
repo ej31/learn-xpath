@@ -38,6 +38,7 @@
             padding: 1.5rem;
             position: relative;
         }
+        /* DOM 미리보기 영역에는 폰트 리셋 */
         .dom-preview * {
             font-family: sans-serif;
         }
@@ -48,6 +49,12 @@
     <!-- 헤더 -->
     <header class="bg-slate-800 text-white p-6 shadow-md">
         <div class="max-w-5xl mx-auto">
+            <!-- 홈 링크 추가 -->
+            <a href="index.html" class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-white font-medium mb-4 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                학습 센터로 돌아가기
+            </a>
+
             <h1 class="text-3xl font-bold mb-2">🕵️ XPath 실전 챌린지</h1>
             <p class="text-slate-300">주어진 미션을 읽고 정확한 요소를 타겟팅하는 XPath를 작성하세요.</p>
         </div>
@@ -76,7 +83,7 @@
     <!-- 문제 영역 -->
     <main class="max-w-5xl mx-auto mt-8 px-4 space-y-12">
 
-        <!-- LEVEL 0: 입문 -->
+        <!-- LEVEL 0: 입문 (새로 추가됨) -->
         <section class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="bg-green-50 p-4 border-b border-green-100 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-green-900">LEVEL 0. 로그인 페이지 (입문)</h2>
@@ -451,7 +458,7 @@
             const statusMsg = document.getElementById('statusMsg');
             const matchCount = document.getElementById('matchCount');
 
-            // 1. 초기화
+            // 1. 초기화 (기존 하이라이트 제거)
             document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
             statusMsg.className = 'text-slate-500 font-medium';
             

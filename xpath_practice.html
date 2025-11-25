@@ -24,32 +24,40 @@
 
     <!-- 상단 고정: XPath 입력 도구 -->
     <div class="fixed top-0 left-0 w-full bg-white shadow-lg z-50 p-4 border-b border-gray-200">
-        <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-center">
-            <div class="flex-grow w-full">
-                <label class="block text-sm font-bold text-gray-700 mb-1">XPath 입력:</label>
-                <div class="flex gap-2">
-                    <input type="text" id="xpathInput" 
-                           placeholder="//div[@id='target'] (Enter키를 눌러 실행)" 
-                           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                           onkeydown="if(event.key === 'Enter') runXPath()">
-                    <button onclick="runXPath()" 
-                            class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold transition">
-                        실행
-                    </button>
+        <div class="max-w-4xl mx-auto">
+            <!-- 홈 링크 추가 -->
+            <a href="index.html" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 font-bold mb-3 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                학습 센터로 돌아가기
+            </a>
+
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="flex-grow w-full">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">XPath 입력:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="xpathInput" 
+                               placeholder="//div[@id='target'] (Enter키를 눌러 실행)" 
+                               class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                               onkeydown="if(event.key === 'Enter') runXPath()">
+                        <button onclick="runXPath()" 
+                                class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold transition">
+                            실행
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full md:w-auto min-w-[150px]">
+                    <div class="text-sm font-bold text-gray-700 mb-1">결과:</div>
+                    <div id="resultCount" class="text-blue-600 font-mono text-lg font-bold">0개 매칭됨</div>
                 </div>
             </div>
-            <div class="w-full md:w-auto min-w-[150px]">
-                <div class="text-sm font-bold text-gray-700 mb-1">결과:</div>
-                <div id="resultCount" class="text-blue-600 font-mono text-lg font-bold">0개 매칭됨</div>
-            </div>
+            <p class="text-center text-xs text-gray-500 mt-2">
+                💡 팁: <code>$x()</code> 대신 여기에 입력하세요. 매칭된 요소는 <span class="text-red-500 font-bold">빨간 테두리</span>로 표시됩니다.
+            </p>
         </div>
-        <p class="text-center text-xs text-gray-500 mt-2">
-            💡 팁: <code>$x()</code> 대신 여기에 입력하세요. 매칭된 요소는 <span class="text-red-500 font-bold">빨간 테두리</span>로 표시됩니다.
-        </p>
     </div>
 
     <!-- 메인 콘텐츠 -->
-    <div class="max-w-4xl mx-auto mt-40 mb-20 px-4 space-y-12">
+    <div class="max-w-4xl mx-auto mt-48 mb-20 px-4 space-y-12">
 
         <!-- 섹션 1: 기본 & 속성 -->
         <section id="sec-basics" class="bg-white p-6 rounded-lg shadow">
